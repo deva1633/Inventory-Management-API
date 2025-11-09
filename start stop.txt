@@ -1,0 +1,355 @@
+brew services start mongodb-community@7.0
+brew services stop mongodb-community@7.0
+
+I'll create a comprehensive inventory management system using MongoDB for your college project. This will include a complete project structure with backend API, database models, and a functional frontend interface.I've created a complete **Inventory Management System** project structure using MongoDB for your college project! Here's what's included:
+
+## **Key Features:**
+
+1. **Backend (Node.js + Express + MongoDB)**
+   - Complete REST API structure
+   - MongoDB schemas with Mongoose
+   - Product, Category, Supplier, and Transaction models
+   - CRUD operations for all entities
+   - Low stock tracking
+   - Error handling middleware
+
+2. **Database Design**
+   - Products with category and supplier references
+   - Transaction logging for inventory movements
+   - Virtual properties for calculated fields
+   - Proper validation and constraints
+
+3. **Project Organization**
+   - MVC pattern (Models, Controllers, Routes)
+   - Separated concerns
+   - Configuration management
+   - Middleware for error handling
+
+## **To Get Started:**
+
+1. **Install MongoDB** locally or use MongoDB Atlas (cloud)
+2. **Install dependencies**: `npm install` in the backend folder
+3. **Configure** the `.env` file with your MongoDB connection
+4. **Run**: `npm run dev` to start the server
+
+Would you like me to also create:
+- A **React frontend** with UI components?
+- **Additional routes** (categories, suppliers, transactions)?
+- **Sample data** to populate the database?
+- **Documentation** for API testing with Postman?
+
+Let me know what else you need for your college project!
+
+# Inventory Management System - Data & Input Requirements
+
+## 1. PRODUCT DATA
+
+### Required Fields:
+- **Product Name**: Name of the product (e.g., "Laptop HP ProBook 450")
+- **SKU**: Unique Stock Keeping Unit code (e.g., "LAP-HP-450-001")
+- **Category**: Select from available categories
+- **Quantity**: Current stock quantity (e.g., 50)
+- **Price**: Selling price (e.g., 45000)
+- **Cost**: Purchase/manufacturing cost (e.g., 35000)
+
+### Optional Fields:
+- **Description**: Detailed product description
+- **Supplier**: Select from supplier list
+- **Reorder Level**: Minimum stock before reorder alert (e.g., 10)
+- **Status**: Active/Inactive/Discontinued
+
+### Example Product Entry:
+```json
+{
+  "name": "Dell Mouse Wireless",
+  "sku": "ACC-DELL-MS-001",
+  "description": "Wireless optical mouse with USB receiver",
+  "category": "Electronics Accessories",
+  "supplier": "Tech Distributors Ltd",
+  "quantity": 150,
+  "reorderLevel": 20,
+  "price": 850,
+  "cost": 600,
+  "status": "active"
+}
+```
+
+---
+
+## 2. CATEGORY DATA
+
+### Required Fields:
+- **Category Name**: Name of the category (e.g., "Electronics")
+
+### Optional Fields:
+- **Description**: Category description
+
+### Example Categories:
+```json
+[
+  {
+    "name": "Electronics",
+    "description": "Electronic devices and gadgets"
+  },
+  {
+    "name": "Office Supplies",
+    "description": "Stationery and office equipment"
+  },
+  {
+    "name": "Furniture",
+    "description": "Office and home furniture"
+  },
+  {
+    "name": "Accessories",
+    "description": "Computer and electronic accessories"
+  }
+]
+```
+
+---
+
+## 3. SUPPLIER DATA
+
+### Required Fields:
+- **Supplier Name**: Company/supplier name (e.g., "Tech Solutions Pvt Ltd")
+- **Email**: Contact email (e.g., "sales@techsolutions.com")
+- **Phone**: Contact number (e.g., "+91-9876543210")
+
+### Optional Fields:
+- **Contact Person**: Name of contact person
+- **Address Details**:
+  - Street
+  - City
+  - State
+  - Zip Code
+  - Country
+
+### Example Supplier Entry:
+```json
+{
+  "name": "Tech Distributors India",
+  "contactPerson": "Rajesh Kumar",
+  "email": "info@techdist.in",
+  "phone": "+91-9876543210",
+  "address": {
+    "street": "123 Industrial Area",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "zipCode": "400001",
+    "country": "India"
+  }
+}
+```
+
+---
+
+## 4. TRANSACTION DATA
+
+### Required Fields:
+- **Product**: Select product from list
+- **Type**: Transaction type
+  - `in` - Stock incoming/purchase
+  - `out` - Stock outgoing/sale
+  - `adjustment` - Stock correction
+- **Quantity**: Number of units
+
+### Optional Fields:
+- **Reason**: Reason for transaction (e.g., "Customer order", "Damaged goods")
+- **Reference**: Reference number (e.g., Invoice number, PO number)
+
+### Example Transactions:
+```json
+[
+  {
+    "product": "Dell Mouse Wireless",
+    "type": "in",
+    "quantity": 100,
+    "reason": "New stock purchase",
+    "reference": "PO-2025-001"
+  },
+  {
+    "product": "Dell Mouse Wireless",
+    "type": "out",
+    "quantity": 5,
+    "reason": "Customer sale",
+    "reference": "INV-2025-045"
+  },
+  {
+    "product": "Dell Mouse Wireless",
+    "type": "adjustment",
+    "quantity": -2,
+    "reason": "Damaged during storage",
+    "reference": "ADJ-2025-003"
+  }
+]
+```
+
+---
+
+## 5. SAMPLE DATA SET FOR TESTING
+
+### Categories (4 entries):
+1. Electronics
+2. Office Supplies
+3. Furniture
+4. Accessories
+
+### Suppliers (3 entries):
+1. Tech Distributors India
+2. Office Mart Suppliers
+3. Global Electronics Pvt Ltd
+
+### Products (10+ entries):
+
+| Product Name | SKU | Category | Quantity | Price | Cost | Reorder Level |
+|--------------|-----|----------|----------|-------|------|---------------|
+| HP Laptop ProBook 450 | LAP-HP-450 | Electronics | 25 | 45000 | 35000 | 5 |
+| Dell Wireless Mouse | ACC-DELL-MS | Accessories | 150 | 850 | 600 | 20 |
+| A4 Paper Ream | OFF-A4-001 | Office Supplies | 200 | 250 | 180 | 50 |
+| Office Chair Executive | FUR-CHR-001 | Furniture | 15 | 8500 | 6000 | 5 |
+| USB Flash Drive 32GB | ACC-USB-32 | Accessories | 80 | 450 | 300 | 15 |
+| Whiteboard 4x6 ft | OFF-WB-001 | Office Supplies | 10 | 3500 | 2500 | 3 |
+| Samsung Monitor 24" | ELEC-MON-24 | Electronics | 30 | 12000 | 9000 | 8 |
+| Keyboard Wireless | ACC-KB-001 | Accessories | 100 | 1200 | 800 | 20 |
+| Conference Table | FUR-TBL-001 | Furniture | 8 | 25000 | 18000 | 2 |
+| Printer Cartridge Black | OFF-CART-BK | Office Supplies | 45 | 1800 | 1200 | 10 |
+
+---
+
+## 6. USER INPUT FORMS
+
+### Product Entry Form Fields:
+```
+┌─────────────────────────────────────┐
+│ Add New Product                     │
+├─────────────────────────────────────┤
+│ Product Name:     [_____________]   │
+│ SKU:             [_____________]   │
+│ Description:     [_____________]   │
+│                  [_____________]   │
+│ Category:        [Dropdown ▼]      │
+│ Supplier:        [Dropdown ▼]      │
+│ Quantity:        [_____________]   │
+│ Reorder Level:   [_____________]   │
+│ Cost Price:      [_____________]   │
+│ Selling Price:   [_____________]   │
+│ Status:          ◉ Active          │
+│                  ○ Inactive        │
+│                                     │
+│ [Cancel]  [Save Product]           │
+└─────────────────────────────────────┘
+```
+
+### Transaction Entry Form:
+```
+┌─────────────────────────────────────┐
+│ Record Transaction                  │
+├─────────────────────────────────────┤
+│ Product:         [Dropdown ▼]      │
+│ Type:            ◉ Stock In         │
+│                  ○ Stock Out        │
+│                  ○ Adjustment       │
+│ Quantity:        [_____________]   │
+│ Reason:          [_____________]   │
+│ Reference:       [_____________]   │
+│                                     │
+│ [Cancel]  [Submit]                 │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 7. DATA VALIDATION RULES
+
+### Product:
+- ✓ Name: Required, 3-100 characters
+- ✓ SKU: Required, unique, alphanumeric with hyphens
+- ✓ Quantity: Required, number ≥ 0
+- ✓ Price: Required, number > 0
+- ✓ Cost: Required, number > 0
+- ✓ Reorder Level: Optional, number ≥ 0
+
+### Supplier:
+- ✓ Name: Required, 3-100 characters
+- ✓ Email: Required, valid email format
+- ✓ Phone: Required, 10-15 digits
+
+### Transaction:
+- ✓ Product: Required, must exist
+- ✓ Type: Required, one of: in/out/adjustment
+- ✓ Quantity: Required, number > 0
+
+---
+
+## 8. REPORTS & ANALYTICS DATA OUTPUTS
+
+The system can generate:
+
+1. **Stock Summary Report**
+   - Total products
+   - Total stock value
+   - Low stock items count
+
+2. **Product-wise Report**
+   - Product details
+   - Current stock
+   - Stock value
+   - Last updated
+
+3. **Transaction History**
+   - All stock movements
+   - Date-wise filtering
+   - Product-wise filtering
+
+4. **Low Stock Alert**
+   - Products below reorder level
+   - Recommended reorder quantity
+
+5. **Category-wise Inventory**
+   - Stock distribution by category
+   - Category-wise value
+
+---
+
+## 9. IMPORT DATA FORMAT (CSV/Excel)
+
+### Products CSV Template:
+```csv
+name,sku,description,category,supplier,quantity,reorderLevel,price,cost,status
+Dell Mouse,ACC-DELL-001,Wireless Mouse,Accessories,Tech Dist,100,20,850,600,active
+HP Laptop,LAP-HP-001,15.6 inch Laptop,Electronics,Tech Dist,25,5,45000,35000,active
+```
+
+### Suppliers CSV Template:
+```csv
+name,contactPerson,email,phone,street,city,state,zipCode,country
+Tech Distributors,John Doe,john@tech.com,9876543210,123 Street,Mumbai,MH,400001,India
+```
+
+---
+
+## 10. INITIAL SETUP CHECKLIST
+
+Before using the system, ensure you have:
+
+- [ ] At least 3-5 categories created
+- [ ] At least 2-3 suppliers added
+- [ ] Sample products (minimum 10) entered
+- [ ] Initial stock quantities set
+- [ ] Reorder levels configured
+- [ ] Test transactions recorded
+
+This ensures the system has enough data for demonstrations and testing!
+
+Your GUI is working; it’s just showing “Uncategorized/Unknown/0” because the database doesn’t have meaningful category/supplier/price/quantity data yet. Seed/import data, then restart.
+Do this:
+Start backend (port 8000):
+cd /Users/devadharsanan/Documents/NoSQLJComp/backendPORT=8000 node server.js
+In a new terminal, seed sample data (gives categories, suppliers, products with values):
+cd /Users/devadharsanan/Documents/NoSQLJComp/backendnpm run seed
+Optionally import the UCI dataset for richer stats (takes longer):
+npm run import
+Relaunch the GUI:
+cd /Users/devadharsanan/Documents/NoSQLJComp/java-guijava -jar target/inventory-management-gui-1.0.0-shaded.jar
+Notes:
+The pie/bar charts and Top Products table now reflect API data. If you still see only “Uncategorized/Unknown”, it means products in MongoDB don’t have category linked or suppliers with address.country set; seeding/importing resolves that.

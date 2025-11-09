@@ -1,0 +1,457 @@
+# Inventory Management System - MongoDB Project
+
+## Project Structure
+
+```
+inventory-management/
+├── backend/
+│   ├── config/
+│   │   └── database.js
+│   ├── models/
+│   │   ├── Product.js
+│   │   ├── Category.js
+│   │   ├── Supplier.js
+│   │   └── Transaction.js
+│   ├── routes/
+│   │   ├── products.js
+│   │   ├── categories.js
+│   │   ├── suppliers.js
+│   │   └── transactions.js
+│   ├── controllers/
+│   │   ├── productController.js
+│   │   ├── categoryController.js
+│   │   ├── supplierController.js
+│   │   └── transactionController.js
+│   ├── middleware/
+│   │   ├── errorHandler.js
+│   │   └── validator.js
+│   ├── utils/
+│   │   └── helpers.js
+│   ├── server.js
+│   └── package.json
+├── frontend/
+│   ├── public/
+│   │   └── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Dashboard.js
+│   │   │   ├── ProductList.js
+│   │   │   ├── AddProduct.js
+│   │   │   └── Reports.js
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   ├── App.js
+│   │   └── index.js
+│   └── package.json
+└── README.md
+```
+
+## Backend Setup
+
+### 1. package.json
+```json
+{
+  "name": "inventory-backend",
+  "version": "1.0.0",
+  "description": "Inventory Management System Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express-validator": "^7.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
+```
+
+### 2. config/database.js
+```javascript
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/inventory_db', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log('MongoDB Connected Successfully');
+  } catch (err) {
+    console.error('MongoDB Connection Error:', err.message);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
+```
+
+### 3. models/Product.js
+```javascript
+const mongoose = require('mongoose');
+
+const productSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  sku: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true
+  },
+  supplier: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Supplier'
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0
+  },
+  reorderLevel: {
+    type: Number,
+    default: 10
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  cost: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  status: {
+    type: String,
+    enum: ['active', 'inactive', 'discontinued'],
+    default: 'active'
+  }
+}, {
+  timestamps: true
+});
+
+productSchema.virtual('isLowStock').get(function() {
+  return this.quantity <= this.reorderLevel;
+});
+
+module.exports = mongoose.model('Product', productSchema);
+```
+
+### 4. models/Category.js
+```javascript
+const mongoose = require('mongoose');
+
+const categorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  }
+}, {
+  timestamps: true
+});
+
+module.exports = mongoose.model('Category', categorySchema);
+```
+
+### 5. models/Supplier.js
+```javascript
+const mongoose = require('mongoose');
+
+const supplierSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  contactPerson: {
+    type: String,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true
+  },
+  phone: {
+    type: String,
+    required: true
+  },
+  address: {
+    street: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String
+  }
+}, {
+  timestamps: true
+});
+
+module.exports = mongoose.model('Supplier', supplierSchema);
+```
+
+### 6. models/Transaction.js
+```javascript
+const mongoose = require('mongoose');
+
+const transactionSchema = new mongoose.Schema({
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['in', 'out', 'adjustment'],
+    required: true
+  },
+  quantity: {
+    type: Number,
+    required: true
+  },
+  reason: {
+    type: String,
+    trim: true
+  },
+  reference: {
+    type: String,
+    trim: true
+  }
+}, {
+  timestamps: true
+});
+
+module.exports = mongoose.model('Transaction', transactionSchema);
+```
+
+### 7. server.js
+```javascript
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const connectDB = require('./config/database');
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api/products', require('./routes/products'));
+app.use('/api/categories', require('./routes/categories'));
+app.use('/api/suppliers', require('./routes/suppliers'));
+app.use('/api/transactions', require('./routes/transactions'));
+
+// Error handling middleware
+app.use(require('./middleware/errorHandler'));
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
+
+### 8. routes/products.js
+```javascript
+const express = require('express');
+const router = express.Router();
+const productController = require('../controllers/productController');
+
+router.get('/', productController.getAllProducts);
+router.get('/low-stock', productController.getLowStockProducts);
+router.get('/:id', productController.getProductById);
+router.post('/', productController.createProduct);
+router.put('/:id', productController.updateProduct);
+router.delete('/:id', productController.deleteProduct);
+
+module.exports = router;
+```
+
+### 9. controllers/productController.js
+```javascript
+const Product = require('../models/Product');
+
+exports.getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate('category', 'name')
+      .populate('supplier', 'name');
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getLowStockProducts = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate('category', 'name')
+      .populate('supplier', 'name');
+    const lowStock = products.filter(p => p.quantity <= p.reorderLevel);
+    res.json(lowStock);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .populate('category')
+      .populate('supplier');
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.createProduct = async (req, res) => {
+  const product = new Product(req.body);
+  try {
+    const newProduct = await product.save();
+    res.status(201).json(newProduct);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json(product);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+```
+
+### 10. middleware/errorHandler.js
+```javascript
+const errorHandler = (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err : {}
+  });
+};
+
+module.exports = errorHandler;
+```
+
+### 11. .env file
+```
+MONGODB_URI=mongodb://localhost:27017/inventory_db
+PORT=5000
+NODE_ENV=development
+```
+
+## Installation & Running
+
+### Backend:
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### MongoDB Setup:
+```bash
+# Start MongoDB
+mongod
+
+# Or use MongoDB Atlas (cloud) connection string in .env
+```
+
+## Features Implemented
+
+1. **Product Management**: CRUD operations for products
+2. **Category Management**: Organize products by categories
+3. **Supplier Management**: Track supplier information
+4. **Transaction Tracking**: Log inventory movements
+5. **Low Stock Alerts**: Identify products below reorder level
+6. **Data Relationships**: MongoDB references between collections
+7. **Validation**: Input validation and error handling
+8. **REST API**: Complete RESTful API structure
+
+## API Endpoints
+
+- `GET /api/products` - Get all products
+- `GET /api/products/low-stock` - Get low stock products
+- `GET /api/products/:id` - Get product by ID
+- `POST /api/products` - Create new product
+- `PUT /api/products/:id` - Update product
+- `DELETE /api/products/:id` - Delete product
+
+Similar endpoints for categories, suppliers, and transactions.
+
+## Database Schema Design
+
+The system uses MongoDB with Mongoose ODM, featuring:
+- Referenced relationships (Category, Supplier)
+- Embedded documents (Address in Supplier)
+- Virtual properties (isLowStock)
+- Timestamps (createdAt, updatedAt)
+- Data validation and constraints
+
+## Future Enhancements
+
+1. User authentication & authorization
+2. Advanced reporting & analytics
+3. Barcode scanning integration
+4. Email notifications for low stock
+5. Multi-warehouse support
+6. Excel import/export functionality
